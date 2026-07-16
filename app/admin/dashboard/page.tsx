@@ -8,7 +8,6 @@ import {
   formatAttendanceTime,
   PERIOD_PAGI,
   PERIOD_SORE,
-  periodLabel,
   statusesForPeriod
 } from '@/lib/attendance';
 import { requireAdmin, userInitials } from '@/lib/auth';
@@ -32,30 +31,32 @@ function TableBlock({ title, caption, period, rows, date }: {
 }) {
   return (
     <section className="card">
-      <h2>{title}</h2>
-      <p className="muted">{caption} Total: {rows.length} data.</p>
+      <div className="card-header">
+        <h2>{title}</h2>
+        <p className="muted">{caption} Terdapat {rows.length} data peserta.</p>
+      </div>
 
-      <div className="table-wrap">
+      <div className="table-wrap responsive-table">
         <table>
           <thead>
             <tr>
               <th>Peserta</th>
               <th>Jam</th>
-              <th>Status & Catatan</th>
+              <th>Status dan catatan</th>
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 ? (
-              <tr><td colSpan={3}>Belum ada data untuk tanggal ini.</td></tr>
+              <tr><td className="empty-cell" colSpan={3}>Belum ada data untuk tanggal ini.</td></tr>
             ) : null}
 
             {rows.map((attendance) => (
               <tr key={attendance.id}>
-                <td>
+                <td data-label="Peserta">
                   <div className="avatar">
                     {attendance.photo_path ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={attendance.photo_path} alt={`Foto ${attendance.name}`} />
+                      <img src={attendance.photo_path} alt={`Foto profil ${attendance.name}`} />
                     ) : (
                       <span className="avatar-fallback">{userInitials({ name: attendance.name })}</span>
                     )}
@@ -67,19 +68,25 @@ function TableBlock({ title, caption, period, rows, date }: {
                     </div>
                   </div>
                 </td>
-                <td>{formatAttendanceTime(attendance.attendance_at)}</td>
-                <td>
+                <td data-label="Jam">{formatAttendanceTime(attendance.attendance_at)}</td>
+                <td data-label="Status">
                   <form action={updateAdminAttendanceAction} className="inline-form">
                     <input type="hidden" name="id" value={attendance.id} />
                     <input type="hidden" name="date" value={date} />
 
-                    <select name="status" defaultValue={attendance.status} required>
+                    <select name="status" defaultValue={attendance.status} aria-label={`Status ${attendance.name}`} required>
                       {Object.entries(statusesForPeriod(period)).map(([value, label]) => (
                         <option key={value} value={value}>{label}</option>
                       ))}
                     </select>
 
-                    <input type="text" name="note" defaultValue={attendance.note ?? ''} placeholder="Catatan admin" />
+                    <input
+                      type="text"
+                      name="note"
+                      defaultValue={attendance.note ?? ''}
+                      placeholder="Tambahkan catatan"
+                      aria-label={`Catatan ${attendance.name}`}
+                    />
 
                     <button className="btn btn-dark" type="submit">Simpan</button>
                   </form>
@@ -108,35 +115,42 @@ export default async function AdminDashboardPage({ searchParams }: Props) {
     <AppShell user={user}>
       <section className="section-hero">
         <p className="eyebrow">Panel Admin</p>
-        <h1>Data Peserta Absensi</h1>
-        <p>Admin bisa memantau absensi pagi dan sore, serta mengubah status tanpa aturan tunggu 7 jam.</p>
+        <h1>Pantau kehadiran peserta</h1>
+        <p>
+          Tinjau absensi pagi dan sore, perbarui status peserta, lalu siapkan laporan untuk tanggal yang dipilih.
+        </p>
       </section>
 
       <Alert success={searchParams?.success} error={searchParams?.error} />
 
-      <section className="card" style={{ marginBottom: 20 }}>
+      <section className="card section-gap-bottom">
+        <div className="card-header">
+          <h2>Pilih tanggal</h2>
+          <p className="muted">Gunakan filter untuk melihat data kehadiran pada hari tertentu.</p>
+        </div>
+
         <form className="actions">
-          <div style={{ minWidth: 240 }}>
-            <label htmlFor="date">Tanggal</label>
+          <div>
+            <label htmlFor="date">Tanggal absensi</label>
             <input id="date" type="date" name="date" defaultValue={date} />
           </div>
-          <button className="btn btn-primary" type="submit">Filter</button>
-          <Link className="btn btn-success" href={`/admin/reports?date=${date}`}>Buka Laporan</Link>
+          <button className="btn btn-primary" type="submit">Tampilkan data</button>
+          <Link className="btn btn-success" href={`/admin/reports?date=${date}`}>Lihat laporan</Link>
         </form>
       </section>
 
       <div className="grid grid-2">
         <TableBlock
-          title="Tabel Absen Pagi"
-          caption="Jam peserta 05.00 - 11.00 WIB."
+          title="Absensi pagi"
+          caption="Jadwal peserta pukul 05.00–11.00 WIB."
           period={PERIOD_PAGI}
           rows={morningAttendances}
           date={date}
         />
 
         <TableBlock
-          title="Tabel Absen Sore"
-          caption="Jam peserta 13.00 - 22.00 WIB. Admin bisa edit kapan saja, termasuk status Pulang."
+          title="Absensi sore"
+          caption="Jadwal peserta pukul 13.00–22.00 WIB. Admin dapat memperbarui status kapan saja."
           period={PERIOD_SORE}
           rows={eveningAttendances}
           date={date}

@@ -23,34 +23,44 @@ export default async function ReportsPage({ searchParams }: Props) {
   return (
     <AppShell user={user}>
       <section className="section-hero">
-        <p className="eyebrow">Dokumentasi</p>
-        <h1>Laporan PDF & Excel</h1>
-        <p>Laporan menampilkan rekap nama, status hari, hadir, izin, pulang, dan alfa.</p>
+        <p className="eyebrow">Laporan Kehadiran</p>
+        <h1>Rekap yang siap dibagikan</h1>
+        <p>
+          Tinjau ringkasan kehadiran peserta, lalu unduh laporan dalam format PDF atau Excel.
+        </p>
       </section>
 
       <Alert success={searchParams?.success} error={searchParams?.error} />
 
-      <section className="card" style={{ marginBottom: 20 }}>
+      <section className="card section-gap-bottom">
+        <div className="card-header">
+          <h2>Atur laporan</h2>
+          <p className="muted">Pilih tanggal sebelum melihat atau mengunduh rekap kehadiran.</p>
+        </div>
+
         <form className="actions">
-          <div style={{ minWidth: 240 }}>
-            <label htmlFor="date">Tanggal</label>
+          <div>
+            <label htmlFor="date">Tanggal laporan</label>
             <input id="date" type="date" name="date" defaultValue={date} />
           </div>
-          <button className="btn btn-primary" type="submit">Filter</button>
-          <Link className="btn btn-dark" href={`/api/export/pdf?date=${date}`}>Download PDF</Link>
-          <Link className="btn btn-success" href={`/api/export/excel?date=${date}`}>Download Excel</Link>
+          <button className="btn btn-primary" type="submit">Tampilkan rekap</button>
+          <Link className="btn btn-dark" href={`/api/export/pdf?date=${date}`}>Unduh PDF</Link>
+          <Link className="btn btn-success" href={`/api/export/excel?date=${date}`}>Unduh Excel</Link>
         </form>
       </section>
 
       <section className="card">
-        <h2>Preview Laporan</h2>
+        <div className="card-header">
+          <h2>Pratinjau laporan</h2>
+          <p className="muted">Ringkasan status kehadiran setiap peserta untuk tanggal yang dipilih.</p>
+        </div>
 
-        <div className="table-wrap">
+        <div className="table-wrap responsive-table">
           <table>
             <thead>
               <tr>
                 <th>Nama</th>
-                <th>Status Kehadiran Hari</th>
+                <th>Status hari ini</th>
                 <th>Hadir</th>
                 <th>Izin</th>
                 <th>Pulang</th>
@@ -58,14 +68,18 @@ export default async function ReportsPage({ searchParams }: Props) {
               </tr>
             </thead>
             <tbody>
+              {rows.length === 0 ? (
+                <tr><td className="empty-cell" colSpan={6}>Belum ada data laporan untuk tanggal ini.</td></tr>
+              ) : null}
+
               {rows.map((row) => (
                 <tr key={row.nama}>
-                  <td><strong>{row.nama}</strong></td>
-                  <td>{row.status_kehadiran_hari}</td>
-                  <td>{row.hadir}</td>
-                  <td>{row.izin}</td>
-                  <td>{row.pulang}</td>
-                  <td>{row.alfa}</td>
+                  <td data-label="Nama"><strong>{row.nama}</strong></td>
+                  <td data-label="Status">{row.status_kehadiran_hari}</td>
+                  <td data-label="Hadir">{row.hadir}</td>
+                  <td data-label="Izin">{row.izin}</td>
+                  <td data-label="Pulang">{row.pulang}</td>
+                  <td data-label="Alfa">{row.alfa}</td>
                 </tr>
               ))}
             </tbody>

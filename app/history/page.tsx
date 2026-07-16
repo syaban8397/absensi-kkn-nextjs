@@ -30,9 +30,11 @@ export default async function HistoryPage({ searchParams }: Props) {
   return (
     <AppShell user={user}>
       <section className="section-hero">
-        <p className="eyebrow">Riwayat Peserta</p>
-        <h1>Data Absensi Saya</h1>
-        <p>Semua data absensi milik akun {user.name} ditampilkan di halaman ini.</p>
+        <p className="eyebrow">Riwayat Kehadiran</p>
+        <h1>Catatan absensi Anda</h1>
+        <p>
+          Lihat ringkasan dan detail absensi terbaru atas nama {user.name}.
+        </p>
       </section>
 
       <Alert success={searchParams?.success} error={searchParams?.error} />
@@ -44,10 +46,13 @@ export default async function HistoryPage({ searchParams }: Props) {
         <div className="stat-card"><span>Alfa</span><strong>{summary.alfa}</strong></div>
       </div>
 
-      <section className="card" style={{ marginTop: 20 }}>
-        <h2>Riwayat Absensi</h2>
+      <section className="card section-gap">
+        <div className="card-header">
+          <h2>Riwayat absensi</h2>
+          <p className="muted">Menampilkan hingga 50 catatan terbaru.</p>
+        </div>
 
-        <div className="table-wrap">
+        <div className="table-wrap responsive-table">
           <table>
             <thead>
               <tr>
@@ -60,16 +65,16 @@ export default async function HistoryPage({ searchParams }: Props) {
             </thead>
             <tbody>
               {history.length === 0 ? (
-                <tr><td colSpan={5}>Belum ada data absensi.</td></tr>
+                <tr><td className="empty-cell" colSpan={5}>Belum ada data absensi.</td></tr>
               ) : null}
 
               {history.map((attendance) => (
                 <tr key={attendance.id}>
-                  <td>{formatDateId(attendance.attendance_date)}</td>
-                  <td>{periodLabel(attendance.period)}</td>
-                  <td>{formatAttendanceTime(attendance.attendance_at)}</td>
-                  <td><StatusBadge status={attendance.status} /></td>
-                  <td>{attendance.note || '-'}</td>
+                  <td data-label="Tanggal">{formatDateId(attendance.attendance_date)}</td>
+                  <td data-label="Periode">{periodLabel(attendance.period)}</td>
+                  <td data-label="Jam">{formatAttendanceTime(attendance.attendance_at)}</td>
+                  <td data-label="Status"><StatusBadge status={attendance.status} /></td>
+                  <td data-label="Catatan">{attendance.note || '—'}</td>
                 </tr>
               ))}
             </tbody>
