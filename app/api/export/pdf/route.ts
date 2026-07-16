@@ -103,8 +103,7 @@ export async function GET(request: NextRequest) {
   doc.end();
   const pdf = await pdfReady;
 
-  return new NextResponse(new
-    Uint8Array(pdf), {
+  return new NextResponse(pdf, {
     headers: {
       'Content-Type': 'application/pdf',
       'Content-Disposition': `attachment; filename="laporan-absensi-kkn-${date}.pdf"`,

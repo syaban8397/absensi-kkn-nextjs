@@ -77,9 +77,10 @@ export async function ensureDateIsGenerated(date: string): Promise<void> {
   for (const participant of participants) {
     for (const period of [PERIOD_PAGI, PERIOD_SORE]) {
       await execute(
-        `INSERT IGNORE INTO attendances
+        `INSERT INTO attendances
           (user_id, attendance_date, period, status, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?)`,
+         VALUES (?, ?, ?, ?, ?, ?)
+         ON CONFLICT (user_id, attendance_date, period) DO NOTHING`,
         [participant.id, date, period, STATUS_ALFA, now, now]
       );
     }
@@ -99,7 +100,7 @@ export async function getUserHistory(userId: number, limit = 50): Promise<Attend
     `SELECT *
      FROM attendances
      WHERE user_id = ?
-     ORDER BY attendance_date DESC, FIELD(period, 'sore', 'pagi')
+     ORDER BY attendance_date DESC, CASE period WHEN 'sore' THEN 0 ELSE 1 END
      LIMIT ?`,
     [userId, limit]
   );
@@ -139,7 +140,7 @@ export async function reportSummary(date: string): Promise<ReportRow[]> {
       `SELECT *
        FROM attendances
        WHERE user_id = ? AND attendance_date = ?
-       ORDER BY FIELD(period, 'pagi', 'sore')`,
+       ORDER BY CASE period WHEN 'pagi' THEN 0 ELSE 1 END`,
       [user.id, date]
     );
 
